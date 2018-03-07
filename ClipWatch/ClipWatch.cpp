@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2013-2014 Sean Echevarria
+* Copyright (C) 2001-2004, 2013-2014, 2018 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -82,13 +82,15 @@ GetIniFilePath()
 	return iniPath;
 }
 
-void
-RunApp()
+void RunApp(bool startWithOpenWnd)
 {
 	AppSettings appSettings = std::make_shared<CIniFile>();
 	appSettings->SetPath(GetIniFilePath());
 	appSettings->ReadFile();
 	TaskBarWnd taskBarWnd(appSettings);
+
+	if (startWithOpenWnd)
+		taskBarWnd.DisplayWindow();
 
 	MSG msg;
 	BOOL bRet;
@@ -128,7 +130,7 @@ wWinMain(HINSTANCE hInstance,
 	if (hPrevInst)
 		SendMessage(hPrevInst, WM_COMMAND, ID_APP_EXIT, 0);
 
-	RunApp();
+	RunApp(lpCmdLine && *lpCmdLine && !_tcscmp(lpCmdLine, L"-open"));
 
 	_Module.Term();
     return nRet;
