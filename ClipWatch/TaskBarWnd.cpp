@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2009, 2013-2014 Sean Echevarria
+* Copyright (C) 2001-2004, 2009, 2013-2014, 2018 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -126,10 +126,19 @@ TaskBarWnd::~TaskBarWnd()
 {
 }
 
+void
+TaskBarWnd::DisplayWindow()
+{
+	if (mMainWnd)
+		mMainWnd->RedisplayWindow();
+	else
+		mMainWnd = new ClipWatchFrame(this, mAppSettings, mClipHistory);
+}
+
 LRESULT
 TaskBarWnd::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	OnActivate(0, 0, 0, bHandled);
+	OnActivate(0, 0, nullptr, bHandled);
 	bHandled = false;
 	return 0;
 }
@@ -251,11 +260,7 @@ TaskBarWnd::OnDrawClipboard(UINT uMsg,
 LRESULT
 TaskBarWnd::OnDisplayApp(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
-	if (mMainWnd)
-		mMainWnd->RedisplayWindow();
-	else
-		mMainWnd = new ClipWatchFrame(this, mAppSettings, mClipHistory);
-
+	DisplayWindow();
 	bHandled = true;
 	return 1;
 }

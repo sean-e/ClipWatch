@@ -60,6 +60,7 @@ public:
 	TaskBarWnd(AppSettings settings);
 	~TaskBarWnd();
 
+	void DisplayWindow();
 	BOOL GetMonitorActive() const { return mAmInChain; }
 	int GetAutopaste() const { return mAutopaste; }
 	int GetSendinput() const { return mSendInput; }
