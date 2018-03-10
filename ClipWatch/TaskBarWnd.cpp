@@ -466,10 +466,10 @@ TaskBarWnd::OnIconNotification(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 {
 	switch (lParam)	{
 	case WM_LBUTTONDOWN:
-		OnDisplayApp(0, 0, 0, bHandled);
+		OnDisplayApp(0, 0, nullptr, bHandled);
 		break;
 	case WM_RBUTTONUP:
-		OnDisplayMenu(0, 0, 0, bHandled);
+		OnDisplayMenu(0, 0, nullptr, bHandled);
 	 	break;
 	}
 
@@ -491,9 +491,9 @@ TaskBarWnd::OnHotkey(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 	switch (wParam)
 	{
 	case IDC_DISPLAYMENU:
-		return OnDisplayMenu(0, 0, 0, bHandled);
+		return OnDisplayMenu(0, 0, nullptr, bHandled);
 	case IDC_DISPLAYAPP:
-		return OnDisplayApp(-5, 0, 0, bHandled);
+		return OnDisplayApp(-5, 0, nullptr, bHandled);
 	case IDM_MINIMIZE_ACTIVE_APP:
 		OnMinimizeActiveApp();
 		break;
@@ -523,7 +523,7 @@ TaskBarWnd::SendTrayNotify(DWORD dwMessage, UINT uID, PTSTR pszTip)
 	NOTIFYICONDATA	tnd;
 	BOOL			ret;
 	HICON			hIcon = uID ? (HICON)::LoadImage(_Module.GetModuleInstance(), 
-		MAKEINTRESOURCE(uID), IMAGE_ICON, 16, 16, 0) : 0;
+		MAKEINTRESOURCE(uID), IMAGE_ICON, 16, 16, 0) : nullptr;
 
 	tnd.cbSize				= sizeof(NOTIFYICONDATA);
 	tnd.hWnd				= m_hWnd;

@@ -5,7 +5,7 @@
 // email suggested changes to me.
 // http://www.codeproject.com/Articles/491/CIniFile
 //
-// Modified in 2001, 2013-2014 by Sean Echevarria 
+// Modified in 2001, 2013-2014, 2018 by Sean Echevarria
 // http://www.creepingfog.com/sean/
 // I think I started with the May 2000 version of the class.
 //////////////////////////////////////////////////////////////////////
@@ -104,9 +104,9 @@ public:
 	//specify the optional paramter as false (0) if you do not want it to create
 	//the key if it doesn't exist. Returns true if data entered, false otherwise
 	//overloaded to accept LPCWSTR, int, and double
-	bool SetValue(LPCWSTR key, LPCWSTR valuename, LPCWSTR value, bool create = 1);
-	bool SetValueInt(LPCWSTR key, LPCWSTR valuename, int value, bool create = 1);
-	bool SetValueFloat(LPCWSTR key, LPCWSTR valuename, double value, bool create = 1);
+	bool SetValue(LPCWSTR key, LPCWSTR valuename, LPCWSTR value, bool create = true);
+	bool SetValueInt(LPCWSTR key, LPCWSTR valuename, int value, bool create = true);
+	bool SetValueFloat(LPCWSTR key, LPCWSTR valuename, double value, bool create = true);
 
 	//deletes specified value
 	//returns true if value existed and deleted, false otherwise

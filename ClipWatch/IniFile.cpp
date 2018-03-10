@@ -2,7 +2,7 @@
 // Written by: Adam Clauss
 // http://www.codeproject.com/Articles/491/CIniFile
 //
-// Modified in 2001, 2009, 2013-2014 by Sean Echevarria 
+// Modified in 2001, 2009, 2013-2014, 2018 by Sean Echevarria
 // http://www.creepingfog.com/sean/
 // I think I started with the May 2000 version of the class.
 //////////////////////////////////////////////////////////////////////
@@ -79,12 +79,11 @@ bool CIniFile::ReadFile()
 		return false;
 
 	wstring readinfo;
-	int curkey = -1, curval = -1;
 	wstring keyname, valuename, value;
 	wstring temp;
 	while (getline(inifile, readinfo))
 	{
-		if (readinfo != L"")
+		if (!readinfo.empty())
 		{
 			int readLen = readinfo.length();
 			if (readinfo[0] == L'[' && readinfo[readLen - 1] == L']') //if a section heading
@@ -110,7 +109,7 @@ bool CIniFile::ReadFile()
 		}
 	}
 	inifile.close();
-	return 1;
+	return true;
 }
 
 //writes data stored in class to ini file
@@ -120,7 +119,7 @@ void CIniFile::WriteFile()
 	inifile.open(path.c_str());
 	for (unsigned int keynum = 0; keynum < names.size(); keynum++)
 	{
-		if (keys[keynum].names.size() != 0 && names[keynum].length())
+		if (!keys[keynum].names.empty() && names[keynum].length())
 		{
 			inifile << L'[' << names[keynum] << L']' << std::endl;
 			for (unsigned int valuenum = 0; valuenum < keys[keynum].names.size(); valuenum++)
@@ -221,7 +220,7 @@ bool CIniFile::SetValue(LPCWSTR keyname, LPCWSTR valuename, LPCWSTR value, bool 
 	if (keynum == -1) //if key doesn't exist
 	{
 		if (!create) //and user does not want to create it,
-			return 0; //stop entering this key
+			return false; //stop entering this key
 		int nameLen = names.size();
 		names.resize(nameLen + 1);
 		keys.resize(keys.size() + 1);
@@ -234,7 +233,7 @@ bool CIniFile::SetValue(LPCWSTR keyname, LPCWSTR valuename, LPCWSTR value, bool 
 	if (valuenum == -1)
 	{
 		if (!create)
-			return 0;
+			return false;
 		int nameLen = keys[keynum].names.size();
 		keys[keynum].names.resize(nameLen + 1);
 		keys[keynum].values.resize(nameLen + 1);
@@ -242,7 +241,7 @@ bool CIniFile::SetValue(LPCWSTR keyname, LPCWSTR valuename, LPCWSTR value, bool 
 		keys[keynum].names[valuenum] = valuename;
 	}
 	keys[keynum].values[valuenum] = value;
-	return 1;
+	return true;
 }
 
 //sets value of [keyname] valuename =.
@@ -273,12 +272,12 @@ bool CIniFile::DeleteValue(LPCWSTR keyname, LPCWSTR valuename)
 {
 	int keynum = FindKey(keyname), valuenum = FindValue(keynum, valuename);
 	if (keynum == -1 || valuenum == -1)
-		return 0;
+		return false;
 
 	// sean: substitutes for RemoveAt
 	keys[keynum].names.at(valuenum) = L"";
 	keys[keynum].values.at(valuenum) = L"";
-	return 1;
+	return true;
 }
 
 //deletes specified key and all values contained within
@@ -287,13 +286,13 @@ bool CIniFile::DeleteKey(LPCWSTR keyname)
 {
 	int keynum = FindKey(keyname);
 	if (keynum == -1)
-		return 0;
+		return false;
 
 	// sean: substitutes for RemoveAt
 	keys.at(keynum).values.clear();
 	keys.at(keynum).names.clear();
 	names.at(keynum) = L"";
-	return 1;
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////

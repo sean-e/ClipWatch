@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2013-2014 Sean Echevarria
+* Copyright (C) 2001-2004, 2013-2014, 2018 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -75,7 +75,7 @@ private:
 		}
 	};
 
-	typedef std::list<ClippedItem> ClipHist;
+	using ClipHist = std::list<ClippedItem>;
 	ClipHist		mHistData;
 	const int	mMaxItems;
 };

@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2009, 2013-2014 Sean Echevarria
+* Copyright (C) 2001-2004, 2009, 2013-2014, 2018 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -151,7 +151,7 @@ ClipboardHistory::Open()
 	mHistData.clear();
 	std::vector<WCHAR> fileBuf;
 	::ReadFileToBuf(::GetDatFilePath(), fileBuf);
-	if (!fileBuf.size())
+	if (fileBuf.empty())
 		return;
 
 	LPWSTR pBegin = &fileBuf[0];

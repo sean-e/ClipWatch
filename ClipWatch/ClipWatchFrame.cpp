@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2009, 2013-2014 Sean Echevarria
+* Copyright (C) 2001-2004, 2009, 2013-2014, 2018 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -268,12 +268,12 @@ ClipWatchFrame::SelectListViewItem(bool doPaste /*= true*/)
 {
 	int item = mListview.GetSelectedIndex();
 	if (item == -1)
-		return 0;
+		return false;
 
 	bool pinned;
 	CString strItem = mClipHist->GetItem(item, pinned);
 	if (!strItem.GetLength())
-		return 0;
+		return false;
 
 	if (::OpenClipboard(m_hWnd))
 	{
@@ -292,10 +292,10 @@ ClipWatchFrame::SelectListViewItem(bool doPaste /*= true*/)
 		if (doPaste)
 			mAttemptAutoPaste = TRUE;
 		PostMessage(WM_CLOSE, 0, 0);
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 bool
@@ -368,7 +368,7 @@ ClipWatchFrame::UpdateData()
 	mListview.SetRedraw(FALSE);
 	mListview.DeleteAllItems();
 
-	for (int idx = 0; 1; idx++)
+	for (int idx = 0; true; idx++)
 	{
 		bool pinned;
 		LPCWSTR strItem = mClipHist->GetItem(idx, pinned);
