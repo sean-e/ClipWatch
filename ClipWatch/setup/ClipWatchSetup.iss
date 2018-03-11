@@ -5,7 +5,7 @@
 #define MyAppPublisher "Fester (Sean Echevarria)"
 #define MyAppURL "https://sourceforge.net/projects/clipwatch/"
 #define MyAppExeName "ClipWatch.exe"
-#define ExeDir ".\..\ReleaseMinDependency"
+#define ExeDir ".\..\Release"
 #define MyAppVersion "2.1.0.0"
 
 [Setup]
@@ -23,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputDir=.\..\ReleaseMinDependency
+OutputDir=.\..\Release
 OutputBaseFilename=ClipWatchSetup
 Compression=lzma
 SolidCompression=yes
