@@ -6,7 +6,7 @@
 #define MyAppURL "https://sourceforge.net/projects/clipwatch/"
 #define MyAppExeName "ClipWatch.exe"
 #define ExeDir ".\..\ReleaseMinDependency"
-#define MyAppVersion "2.0.1.0"
+#define MyAppVersion "2.1.0.0"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
