@@ -983,7 +983,7 @@ LRESULT
 ClipWatchFrame::OnAbout(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	CString msgTxt;
-	msgTxt.Format(L"ClipWatch version something or another.\r\nCopyright 2001-2009, 2013-2014 Sean Echevarria");
+	msgTxt.Format(L"ClipWatch version something or another.\r\nCopyright 2001-2009, 2013-2014, 2018 Sean Echevarria");
 
 	MessageBox(msgTxt, L"About", MB_OK | MB_ICONINFORMATION);
 	bHandled = true;
