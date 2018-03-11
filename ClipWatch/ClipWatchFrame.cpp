@@ -181,6 +181,13 @@ ClipWatchFrame::~ClipWatchFrame()
 						mTargetWnd = kOriginalTarget;
 					break;
 				}
+				else if (::wcsstr(clsName, L"Xaml Host"))
+				{
+					// [cwissue:2]
+					FTRACE2(L"break on Xaml Host %08x, parent %08x\n", mTargetWnd, hLastParent);
+					mTargetWnd = nullptr;
+					break;
+				}
 			}
 
 			LONG style, exStyle;
