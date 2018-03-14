@@ -261,8 +261,14 @@ LRESULT
 TaskBarWnd::OnDisplayApp(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	DisplayWindow();
-	bHandled = true;
-	return 1;
+	if (mMainWnd)
+	{
+		::SetForegroundWindow(mMainWnd->m_hWnd);
+		bHandled = true;
+		return kAcknowledgeOpen;
+	}
+
+	return 0;
 }
 
 LRESULT

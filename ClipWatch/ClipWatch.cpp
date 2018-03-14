@@ -121,15 +121,23 @@ wWinMain(HINSTANCE hInstance,
 {
 //	lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
 
-    _Module.Init(ObjectMap, hInstance);
-    int nRet = 0;
-
-	::InitCommonControls();
-
 	HWND hPrevInst = FindWindow(WND_CLASS_NAME, WND_NAME);
 	if (hPrevInst)
-		SendMessage(hPrevInst, WM_COMMAND, ID_APP_EXIT, 0);
+	{
+		if (TaskBarWnd::kAcknowledgeOpen == SendMessage(hPrevInst, WM_COMMAND, IDC_DISPLAYAPP, 0))
+		{
+			// running instance opened up, we can just exit
+			return 0;
+		}
 
+		// running instance did not respond, so close it amd take over
+		SendMessage(hPrevInst, WM_COMMAND, ID_APP_EXIT, 0);
+	}
+
+	_Module.Init(ObjectMap, hInstance);
+	int nRet = 0;
+
+	::InitCommonControls();
 	RunApp(lpCmdLine && *lpCmdLine && !_tcscmp(lpCmdLine, L"-open"));
 
 	_Module.Term();

@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2009, 2013 Sean Echevarria
+* Copyright (C) 2001-2004, 2009, 2013, 2018 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -71,6 +71,7 @@ public:
 
 	bool TranslateAccelerator(MSG* msg);
 	LRESULT OnToggleExtraHotKeys(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	static const int kAcknowledgeOpen = 100;
 
 	DECLARE_WND_CLASS_EX(WND_CLASS_NAME, 0, 0)
 
