@@ -54,6 +54,30 @@ CComModule _Module;
 BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
 
+bool
+FindAndOpenRunningInstance()
+{
+	HWND hPrevInst = FindWindow(WND_CLASS_NAME, WND_NAME);
+	if (hPrevInst)
+	{
+		DWORD procId = 0;
+		GetWindowThreadProcessId(hPrevInst, &procId);
+		if (procId)
+			AllowSetForegroundWindow(procId);
+
+		if (TaskBarWnd::kAcknowledgeOpen == SendMessage(hPrevInst, WM_COMMAND, IDC_DISPLAYAPP, 0))
+		{
+			// running instance opened up, we can just exit
+			return true;
+		}
+
+		// running instance did not respond, so close it and take over
+		SendMessage(hPrevInst, WM_COMMAND, ID_APP_EXIT, 0);
+	}
+
+	return false;
+}
+
 CString
 GetAppDataDir()
 {
@@ -112,8 +136,7 @@ void RunApp(bool startWithOpenWnd)
 	appSettings->WriteFile();
 }
 
-
-extern "C" int WINAPI 
+extern "C" int WINAPI
 wWinMain(HINSTANCE hInstance,
 		 HINSTANCE /*hPrevInstance*/,
 		 LPWSTR lpCmdLine,
@@ -121,25 +144,16 @@ wWinMain(HINSTANCE hInstance,
 {
 //	lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
 
-	HWND hPrevInst = FindWindow(WND_CLASS_NAME, WND_NAME);
-	if (hPrevInst)
-	{
-		if (TaskBarWnd::kAcknowledgeOpen == SendMessage(hPrevInst, WM_COMMAND, IDC_DISPLAYAPP, 0))
-		{
-			// running instance opened up, we can just exit
-			return 0;
-		}
+	if (FindAndOpenRunningInstance())
+		return 0;
 
-		// running instance did not respond, so close it amd take over
-		SendMessage(hPrevInst, WM_COMMAND, ID_APP_EXIT, 0);
-	}
-
+	CoInitialize(nullptr); // for SHAutoComplete
 	_Module.Init(ObjectMap, hInstance);
-	int nRet = 0;
+	InitCommonControls();
 
-	::InitCommonControls();
 	RunApp(lpCmdLine && *lpCmdLine && !_tcscmp(lpCmdLine, L"-open"));
 
 	_Module.Term();
-    return nRet;
+	CoUninitialize();
+	return 0;
 }
