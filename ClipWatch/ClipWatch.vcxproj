@@ -159,6 +159,7 @@
     <ClInclude Include="FTrace.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SearchEditCtrl.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="TaskBarWnd.h" />
   </ItemGroup>
