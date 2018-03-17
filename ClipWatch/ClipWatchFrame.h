@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2013-2014 Sean Echevarria
+* Copyright (C) 2001-2004, 2013-2014, 2018 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -29,6 +29,7 @@
 
 #include "resource.h"       // main symbols
 #include "ATLControls.h"
+#include "SearchEditCtrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // ClipWatchFrame
@@ -38,8 +39,7 @@ class ClipboardHistory;
 
 enum 
 { 
-	IDC_LISTVIEW	= 50, 
-	kClassNameLength = 256 
+	kClassNameLength = 256
 };
 
 class ClipWatchFrame : 
@@ -47,6 +47,7 @@ class ClipWatchFrame :
 {
 	AppSettings	mSettings;
 	ATLControls::CListViewCtrl mListview;
+	SearchEditCtrl mEditCtrl;
 	HMENU		mOptionsMenu;
 	HMENU		mMainMenu;
 	HACCEL		mAccelerators;
@@ -55,6 +56,13 @@ class ClipWatchFrame :
 	WCHAR		mTargetWndClassName[kClassNameLength];
 	TaskBarWnd	*mTaskWnd;
 	std::shared_ptr<ClipboardHistory> mClipHist;
+	using ClipItemIndex = std::vector<int>;
+	ClipItemIndex	mClipIndexes;
+	CString		mFilterText;
+	UINT		mFilterTimerId = 0;
+	bool		mInSearchMode = false;
+	bool		mCaseSensitive = false;
+	bool		mPendingFilter = false;
 
 public:
 	ClipWatchFrame(TaskBarWnd *tbWnd, AppSettings settings, std::shared_ptr<ClipboardHistory> clipHistory, BOOL show = TRUE);
@@ -62,7 +70,7 @@ public:
 
 	DECLARE_WND_CLASS_EX(nullptr, 0, 0)
 
-	void UpdateData();
+	void UpdateData(CString filter = CString());
 	void RedisplayWindow();
 	bool TranslateAccelerator(MSG* msg);
 
@@ -80,8 +88,11 @@ protected:
 		COMMAND_ID_HANDLER(IDM_SENDINPUT, OnSendinput)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopyItemToClipboard)
 		COMMAND_ID_HANDLER(ID_EDIT_PASTE, OnPasteItemExternal)
+		COMMAND_ID_HANDLER(ID_EDIT_SELECT_ALL, OnSelectAll)
 		COMMAND_ID_HANDLER(ID_EDIT_DELETE, OnDeleteItem)
+		COMMAND_ID_HANDLER(ID_NEXT_PANE, OnControlNavigate)
 		COMMAND_ID_HANDLER(ID_EDIT_PIN, OnPinItem)
+		COMMAND_ID_HANDLER(ID_EDIT_SEARCH, OnToggleSearch)
 		COMMAND_ID_HANDLER(ID_EDIT_EXECUTE, OnExecuteItem)
 		COMMAND_ID_HANDLER(ID_POPUP_ENABLEEXTRAHOTKEYS, OnToggleHotKeys)
 		COMMAND_ID_HANDLER(ID_HELP, OnHelp)
@@ -89,10 +100,12 @@ protected:
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_INITMENU, OnInitMenu)
+		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		MESSAGE_HANDLER(WM_CLOSE, OnClose)
 		NOTIFY_HANDLER(IDC_LISTVIEW, NM_CLICK, OnListViewSelect)
 		NOTIFY_HANDLER(IDC_LISTVIEW, NM_RCLICK, OnListViewRightClick)
 		NOTIFY_HANDLER(IDC_LISTVIEW, LVN_KEYDOWN, OnListViewKeyDown)
+		COMMAND_HANDLER(IDC_FILTER_EDIT, EN_CHANGE, OnFilterEditTextChange)
 	END_MSG_MAP()
 
 private:
@@ -117,10 +130,15 @@ private:
 	LRESULT OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnCopyItemToClipboard(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnPasteItemExternal(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnSelectAll(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnDeleteItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnControlNavigate(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnPinItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnToggleSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnExecuteItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnToggleHotKeys(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnFilterEditTextChange(int code, int idCtrl, HWND hwndCtl, BOOL& bHandled);
 	LRESULT OnHelp(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnAbout(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
@@ -128,6 +146,10 @@ private:
 	void SaveDimensions();
 	bool DoAutopaste();
 	void SetTargetWindow();
+	int GetClipItemHistIndex(int uiItemIdx) const;
+	void SetFilterText(const CString &filterTxt);
+	CString GetTextFromFilterEdit();
+	bool ShouldDisplayItem(CString item) const;
 	bool IsTargetWndListed(LPCWSTR iniSectionName, LPCWSTR iniItemName, LPCWSTR defaultVal = nullptr) const;
 	bool IsTargetWndExcluded(LPCWSTR iniItemName, LPCWSTR defaultVal = nullptr) const;
 	bool IsTargetWndIncluded(LPCWSTR iniItemName, LPCWSTR defaultVal = nullptr) const;

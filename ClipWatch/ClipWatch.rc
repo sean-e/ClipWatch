@@ -143,6 +143,7 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
+        MENUITEM "&Find\tCtrl+F",               ID_EDIT_SEARCH
         MENUITEM "Pa&ste External\tCtrl+V or Enter", ID_EDIT_PASTE
         MENUITEM "Shell &Execute / Run / Open", ID_EDIT_EXECUTE
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
@@ -176,12 +177,16 @@ END
 
 IDR_ACCELERATORS ACCELERATORS
 BEGIN
+    "A",            ID_EDIT_SELECT_ALL,     VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-	"V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_SEARCH,         VIRTKEY, CONTROL, NOINVERT
     "P",            ID_EDIT_PIN,            VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+	"V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
 	VK_DELETE,      ID_EDIT_DELETE,         VIRTKEY, NOINVERT
 	VK_ESCAPE,      ID_FILE_CLOSEWINDOW,    VIRTKEY, NOINVERT
+	VK_TAB,         ID_NEXT_PANE,           VIRTKEY, NOINVERT
+	VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
 END
 
 

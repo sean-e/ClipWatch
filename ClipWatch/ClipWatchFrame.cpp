@@ -232,8 +232,8 @@ ClipWatchFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 	USES_CONVERSION;
 
 	// setup the list ctrl
-	mListview.Create(m_hWnd, rcClient, nullptr, 
-		WS_CHILD|WS_VISIBLE|WS_VSCROLL|LVS_REPORT|LVS_SHAREIMAGELISTS|LVS_SINGLESEL,
+	mListview.Create(m_hWnd, rcClient, nullptr,
+		WS_CHILD|WS_VISIBLE|WS_VSCROLL|LVS_REPORT|LVS_SHAREIMAGELISTS|LVS_SINGLESEL|LVS_SHOWSELALWAYS,
 		0,
 		IDC_LISTVIEW);
 	mListview.SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, /*LVS_EX_TRACKSELECT|*/LVS_EX_FULLROWSELECT);
@@ -243,6 +243,8 @@ ClipWatchFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 //	mListview.SetHoverTime(1);
 
 	UpdateData();
+	mListview.SetFocus();
+
 	bHandled = false;
 	return 0;
 }
@@ -278,7 +280,7 @@ ClipWatchFrame::SelectListViewItem(bool doPaste /*= true*/)
 		return false;
 
 	bool pinned;
-	CString strItem = mClipHist->GetItem(item, pinned);
+	CString strItem(mClipHist->GetItem(GetClipItemHistIndex(item), pinned));
 	if (!strItem.GetLength())
 		return false;
 
@@ -365,8 +367,9 @@ ClipWatchFrame::DoAutopaste()
 }
 
 void
-ClipWatchFrame::UpdateData()
+ClipWatchFrame::UpdateData(CString filterTxt /*= CString()*/)
 {
+	HCURSOR hcurPrev = ::SetCursor((HCURSOR)IDC_WAIT);
 	const int maxLen = 205;
 	CString str;
 	LV_ITEM lvi;
@@ -375,14 +378,35 @@ ClipWatchFrame::UpdateData()
 	mListview.SetRedraw(FALSE);
 	mListview.DeleteAllItems();
 
+	ClipItemIndex prevIdxes;
+	const bool filterCurrentSet = filterTxt.GetLength() && 0 == filterTxt.Find(mFilterText) && !mClipIndexes.empty();
+	if (filterCurrentSet)
+		prevIdxes.swap(mClipIndexes);
+	mClipIndexes.clear();
+	SetFilterText(filterTxt);
+
+	int insertIdx = 0;
 	for (int idx = 0; true; idx++)
 	{
+		int clipHistIdx = idx;
+		if (filterCurrentSet)
+		{
+			if (idx >= (int)prevIdxes.size())
+				break;
+
+			clipHistIdx = prevIdxes[idx];
+		}
+
 		bool pinned;
-		LPCWSTR strItem = mClipHist->GetItem(idx, pinned);
-		if (!strItem || !strItem[0])
+		str = mClipHist->GetItem(clipHistIdx, pinned);
+		if (str.IsEmpty())
 			break;
 
-		str = strItem;
+		if (filterTxt.GetLength() && !ShouldDisplayItem(str))
+			continue;
+
+		mClipIndexes.push_back(clipHistIdx);
+
 		const int sLen = str.GetLength();
 
 		// limit amount displayed
@@ -436,7 +460,7 @@ ClipWatchFrame::UpdateData()
 		}
 
 		// insert text
-		lvi.iItem = idx;
+		lvi.iItem = insertIdx++;
 		lvi.iSubItem = 0;
 		lvi.pszText = const_cast<LPWSTR>((LPCWSTR)str);
 		lvi.mask = LVIF_TEXT;
@@ -459,10 +483,34 @@ ClipWatchFrame::UpdateData()
 		}
 	}
 
-	mListview.SetFocus();
+	_ASSERTE(insertIdx == (int)mClipIndexes.size());
+
 	if (mListview.GetItemCount())
 		mListview.SetItemState(0, LVIS_SELECTED|LVIS_FOCUSED, LVIS_SELECTED|LVIS_FOCUSED);
 	mListview.SetRedraw();
+
+	::SetCursor(hcurPrev);
+}
+
+void
+ClipWatchFrame::SetFilterText(const CString &filterTxt)
+{
+	mFilterText = filterTxt;
+
+	mCaseSensitive = false;
+
+	// if filterTxt has any upper-case letters, then assume case-sensitive, 
+	// otherwise case-insensitive
+
+	for (int idx = 0; idx < filterTxt.GetLength(); ++idx)
+	{
+		TCHAR ch = filterTxt[idx];
+		if (isupper(ch))
+		{
+			mCaseSensitive = true;
+			break;
+		}
+	}
 }
 
 void
@@ -560,7 +608,7 @@ ClipWatchFrame::OnInitMenu(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandl
 		if (item != -1)
 		{
 			bool pinned;
-			CString strItem = mClipHist->GetItem(item, pinned);
+			const CString strItem(mClipHist->GetItem(GetClipItemHistIndex(item), pinned));
 			::CheckMenuItem(hEditMenu, ID_EDIT_PIN, 
 				(pinned ? MF_CHECKED : MF_UNCHECKED) | MF_BYCOMMAND);
 		}
@@ -619,6 +667,20 @@ ClipWatchFrame::OnSize(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BO
 {
 	RECT rcClient;
 	GetClientRect(&rcClient);
+
+	if (mInSearchMode)
+	{
+		NONCLIENTMETRICS ncm{ sizeof(NONCLIENTMETRICS), 0 };
+		SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0);
+		const int kEditHt = ncm.iMenuHeight;
+		const int kClientHt = rcClient.bottom - rcClient.top;
+		rcClient.bottom = rcClient.top + kEditHt;
+		mEditCtrl.MoveWindow(&rcClient);
+		rcClient.top = kEditHt + 1;
+		rcClient.bottom = rcClient.top + kClientHt - kEditHt;
+	}
+
+	// setup the list ctrl
 	mListview.MoveWindow(&rcClient);
 	int newWidth = rcClient.right - rcClient.left;
 	int scrollWidth = 0;
@@ -656,7 +718,7 @@ ClipWatchFrame::OnListViewRightClick(int /*idCtrl*/, LPNMHDR /*notifyCode*/, BOO
 	::SetForegroundWindow(m_hWnd); // Q135788
 	::SetMenuDefaultItem(hPopMenu, ID_EDIT_PASTE, MF_BYCOMMAND);
 	bool pinned;
-	const CString strItem = mClipHist->GetItem(itemIdx, pinned);
+	const CString strItem(mClipHist->GetItem(GetClipItemHistIndex(itemIdx), pinned));
 	::CheckMenuItem(hPopMenu, ID_EDIT_PIN, (pinned ? MF_CHECKED : MF_UNCHECKED) | MF_BYCOMMAND);
 
 	::TrackPopupMenu(hPopMenu, TPM_LEFTALIGN|TPM_RIGHTBUTTON, pt.x, pt.y, 0, m_hWnd, nullptr);
@@ -671,7 +733,7 @@ int
 ClipWatchFrame::ExecuteItem(int itemIdx)
 {
 	bool pinned;
-	CString strItem = mClipHist->GetItem(itemIdx, pinned);
+	CString strItem(mClipHist->GetItem(GetClipItemHistIndex(itemIdx), pinned));
 	if (!strItem.GetLength())
 		return 0;
 
@@ -704,7 +766,7 @@ ClipWatchFrame::ExecuteItem(int itemIdx)
 	}
 
 	// move to head of list (and save modified version if stripped)
-	mClipHist->MoveToHead(itemIdx, strItem);
+	mClipHist->MoveToHead(GetClipItemHistIndex(itemIdx), strItem);
 
 	::ShellExecute(::GetDesktopWindow(), L"open", strItem, nullptr, nullptr, SW_SHOW);
 
@@ -746,6 +808,32 @@ ClipWatchFrame::SetTargetWindow()
 		if (mTargetWndClassName[0])
 			::_wcslwr_s(mTargetWndClassName);
 	}
+}
+
+int
+ClipWatchFrame::GetClipItemHistIndex(int uiItemIdx) const
+{
+	_ASSERTE(uiItemIdx < (int)mClipIndexes.size());
+	return mClipIndexes[uiItemIdx];
+}
+
+bool
+ClipWatchFrame::ShouldDisplayItem(CString item) const
+{
+	if (!mCaseSensitive)
+		item.MakeLower();
+
+	for (int idx = 0; ;)
+	{
+		CString curFilt(mFilterText.Tokenize(L" ", idx));
+		if (curFilt.IsEmpty())
+			break;
+
+		if (-1 == item.Find(curFilt))
+			return false;
+	}
+
+	return true;
 }
 
 bool
@@ -872,16 +960,55 @@ ClipWatchFrame::OnPasteItemExternal(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 	return 1;
 }
 
+LRESULT
+ClipWatchFrame::OnSelectAll(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	HWND foc = GetFocus();
+	if (mEditCtrl.m_hWnd == foc)
+	{
+		mEditCtrl.SetSel(0, -1);
+		bHandled = TRUE;
+	}
+
+	return S_OK;
+}
+
 LRESULT 
 ClipWatchFrame::OnDeleteItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+	HWND foc = GetFocus();
+	if (mEditCtrl.m_hWnd == foc)
+	{
+		const CString filterTxt(GetTextFromFilterEdit());
+		int st = 0, en = 0;
+		mEditCtrl.GetSel(st, en);
+		// if has selection, or no selection and caret is not at end of text, then send back to the search edit
+		if (st != en || st != filterTxt.GetLength())
+		{
+			mEditCtrl.SendMessage(WM_KEYDOWN, VK_DELETE);
+			OnFilterEditTextChange(EN_CHANGE, IDC_FILTER_EDIT, mEditCtrl.m_hWnd, bHandled);
+			bHandled = true;
+			return 1;
+		}
+		
+		// no selection and caret is at end of filter text, so allow delete of list item
+	}
+	else if (mListview.m_hWnd != foc)
+	{
+		// this is an else because we want to allow DEL to work in some 
+		// cases when focus is in the search edit
+		return 0;
+	}
+
 	int item = mListview.GetSelectedIndex();
 	if (item == -1)
 		return 0;
 
+	const int clipHistIdx = GetClipItemHistIndex(item);
+
 	bool doDelete = true;
 	bool pinned;
-	CString strItem = mClipHist->GetItem(item, pinned);
+	const CString strItem(mClipHist->GetItem(clipHistIdx, pinned));
 	if (pinned)
 	{
 		if (MessageBox(L"This is a pinned item.  Are you sure you want to delete it?", L"Delete Pinned Item?", MB_YESNO) == IDNO)
@@ -890,8 +1017,9 @@ ClipWatchFrame::OnDeleteItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHa
 
 	if (doDelete)
 	{
-		mClipHist->Remove(item);
-		UpdateData();
+		mClipHist->Remove(clipHistIdx);
+		mClipIndexes.clear();
+		UpdateData(mFilterText);
 		mListview.SetItemState(item, LVIS_SELECTED|LVIS_FOCUSED, LVIS_SELECTED|LVIS_FOCUSED);
 		if (!ListView_IsItemVisible(mListview.m_hWnd, item))
 		{
@@ -907,14 +1035,28 @@ ClipWatchFrame::OnDeleteItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHa
 }
 
 LRESULT
+ClipWatchFrame::OnControlNavigate(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	HWND foc = GetFocus();
+	if (mEditCtrl.m_hWnd == foc)
+		mListview.SetFocus();
+	else if (mListview.m_hWnd == foc)
+		if (mEditCtrl.IsWindow() && mEditCtrl.IsWindowVisible())
+			mEditCtrl.SetFocus();
+
+	bHandled = true;
+	return 1;
+}
+
+LRESULT
 ClipWatchFrame::OnPinItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	int item = mListview.GetSelectedIndex();
 	if (item == -1)
 		return 0;
 
-	mClipHist->TogglePin(item);
-	UpdateData();
+	mClipHist->TogglePin(GetClipItemHistIndex(item));
+	UpdateData(mFilterText);
 	mListview.SetItemState(item, LVIS_SELECTED|LVIS_FOCUSED, LVIS_SELECTED|LVIS_FOCUSED);
 	if (!ListView_IsItemVisible(mListview.m_hWnd, item))
 	{
@@ -929,6 +1071,54 @@ ClipWatchFrame::OnPinItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandl
 }
 
 LRESULT
+ClipWatchFrame::OnToggleSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)
+{
+	mInSearchMode = !mInSearchMode;
+
+	if (mInSearchMode)
+	{
+		if (!mEditCtrl.m_hWnd)
+		{
+			// setup the filter edit ctrl
+			mEditCtrl.Create(m_hWnd, RECT(), nullptr,
+				WS_CHILD,
+				0,
+				IDC_FILTER_EDIT);
+
+			HFONT fnt = mListview.GetFont();
+			mEditCtrl.SetFont(fnt);
+			mEditCtrl.SetForwardingTarget(mListview.m_hWnd);
+		}
+
+		const CString filterTxt(GetTextFromFilterEdit());
+		if (filterTxt.GetLength())
+		{
+			mPendingFilter = true;
+			mFilterTimerId = 100;
+			SetTimer(mFilterTimerId, 250);
+		}
+	}
+	else
+	{
+		KillTimer(mFilterTimerId);
+		mFilterTimerId = 0;
+		mPendingFilter = false;
+
+		// restore full, unfiltered list
+		UpdateData();
+	}
+
+	BOOL junk;
+	OnSize(0, 0, 0, junk);
+	mEditCtrl.ShowWindow(mInSearchMode ? SW_SHOW : SW_HIDE);
+	if (mInSearchMode)
+		mEditCtrl.SetFocus();
+
+	bHandled = TRUE;
+	return 1;
+}
+
+LRESULT
 ClipWatchFrame::OnExecuteItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	int item = mListview.GetSelectedIndex();
@@ -936,7 +1126,7 @@ ClipWatchFrame::OnExecuteItem(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bH
 		return 0;
 
 	ExecuteItem(item);
-	bHandled = true;
+	bHandled = TRUE;
 	return 1;
 }
 
@@ -944,6 +1134,53 @@ LRESULT
 ClipWatchFrame::OnToggleHotKeys(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	return mTaskWnd->OnToggleExtraHotKeys(wNotifyCode, wID, hWndCtl, bHandled);
+}
+
+LRESULT
+ClipWatchFrame::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	bHandled = TRUE;
+
+	if (!mEditCtrl.IsWindow() || !mEditCtrl.IsWindowVisible())
+	{
+		_ASSERTE(!mInSearchMode);
+		KillTimer(mFilterTimerId);
+		mFilterTimerId = 0;
+		mPendingFilter = false;
+		return S_OK;
+	}
+
+	_ASSERTE(mInSearchMode);
+	CString filterTxt(GetTextFromFilterEdit());
+	mPendingFilter = false;
+	if (filterTxt != mFilterText)
+		UpdateData(filterTxt);
+
+	return S_OK;
+}
+
+CString
+ClipWatchFrame::GetTextFromFilterEdit()
+{
+	CString filterTxt;
+	int nLen = mEditCtrl.GetWindowTextLength();
+	mEditCtrl.GetWindowText(filterTxt.GetBufferSetLength(nLen), nLen + 1);
+	filterTxt.ReleaseBuffer();
+	filterTxt.Trim();
+	return filterTxt;
+}
+
+LRESULT
+ClipWatchFrame::OnFilterEditTextChange(int code, int idCtrl, HWND hwndCtl, BOOL& bHandled)
+{
+	_ASSERTE(idCtrl == IDC_FILTER_EDIT);
+	_ASSERTE(code == EN_CHANGE);
+	_ASSERTE(hwndCtl == mEditCtrl.m_hWnd);
+	KillTimer(mFilterTimerId);
+	mPendingFilter = true;
+	SetTimer(mFilterTimerId, 250);
+	bHandled = TRUE;
+	return S_OK;
 }
 
 bool
@@ -975,7 +1212,7 @@ ClipWatchFrame::OnHelp(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 	helpTxt += L"Move active window down \tCtrl+Alt+Shift+Down\r\n";
 
 	MessageBox(helpTxt, L"Help", MB_OK | MB_ICONINFORMATION);
-	bHandled = true;
+	bHandled = TRUE;
 	return 1;
 }
 
@@ -991,6 +1228,6 @@ ClipWatchFrame::OnAbout(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled
 		"Copyright 2001-2009, 2013-2014, 2018 Sean Echevarria");
 
 	MessageBox(msgTxt, L"About", MB_OK | MB_ICONINFORMATION);
-	bHandled = true;
+	bHandled = TRUE;
 	return 1;
 }

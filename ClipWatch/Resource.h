@@ -57,6 +57,9 @@
 #define ID_EDIT_PIN                     32790
 #define IDM_MOVE_APP_UP                 32791
 #define IDM_MOVE_APP_DOWN               32792
+#define ID_EDIT_SEARCH	 				32793
+#define IDC_LISTVIEW	 				32794
+#define IDC_FILTER_EDIT	 				32795
 #define ID_FILE_OPEN                    0xE101
 #define ID_FILE_SAVE                    0xE103
 #define ID_APP_EXIT                     0xE141
@@ -66,7 +69,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        210
-#define _APS_NEXT_COMMAND_VALUE         32793
+#define _APS_NEXT_COMMAND_VALUE         32796
 #define _APS_NEXT_CONTROL_VALUE         210
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
