@@ -819,7 +819,9 @@ namespace ATLControls
 	{
 	public:
 		// Constructors
-		CEditT(HWND hWnd = NULL) : Base(hWnd) { }
+		CEditT() : Base() { }
+
+		CEditT(HWND hWnd) : Base(hWnd) { }
 
 		CEditT< Base >& operator=(HWND hWnd)
 		{
