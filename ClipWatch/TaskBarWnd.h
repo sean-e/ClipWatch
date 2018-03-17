@@ -35,7 +35,7 @@ extern const UINT WM_MY_NOTIFYICON;
 extern UINT WM_TASKBARCREATED;
 
 #define WND_CLASS_NAME		TEXT("Fester_ClipboardMonitorClass")
-#define WND_NAME			TEXT("Clipboard Monitor")
+#define WND_NAME			TEXT("Clipboard Monitor Taskbar Window")
 
 /////////////////////////////////////////////////////////////////////////////
 // TaskBarWnd

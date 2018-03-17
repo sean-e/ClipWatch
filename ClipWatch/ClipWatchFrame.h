@@ -42,6 +42,9 @@ enum
 	kClassNameLength = 256
 };
 
+#define CLIP_DISPLAY_WND_CLASS_NAME		TEXT("Fester_ClipboardDisplayFrameClass")
+#define CLIP_DISPLAY_WND_TITLE			TEXT("Clipboard Monitor")
+
 class ClipWatchFrame : 
 	public CWindowImpl<ClipWatchFrame, CWindow, CWinTraits<WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_APPWINDOW | WS_EX_WINDOWEDGE> >
 {
@@ -68,7 +71,7 @@ public:
 	ClipWatchFrame(TaskBarWnd *tbWnd, AppSettings settings, std::shared_ptr<ClipboardHistory> clipHistory, BOOL show = TRUE);
 	~ClipWatchFrame();
 
-	DECLARE_WND_CLASS_EX(nullptr, 0, 0)
+	DECLARE_WND_CLASS_EX(CLIP_DISPLAY_WND_CLASS_NAME, 0, 0)
 
 	void UpdateData(CString filter = CString());
 	void RedisplayWindow();

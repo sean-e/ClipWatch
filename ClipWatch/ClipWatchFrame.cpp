@@ -149,7 +149,7 @@ ClipWatchFrame::ClipWatchFrame(
 	GetWndClassInfo().m_wc.hIcon = hIcon;
 	mMainMenu = ::LoadMenu(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
 	mAccelerators = ::LoadAccelerators(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_ACCELERATORS));
-	Create(::GetDesktopWindow(), rcPos, L"Clipboard Monitor", 0, 0, (UINT)mMainMenu);
+	Create(::GetDesktopWindow(), rcPos, CLIP_DISPLAY_WND_TITLE, 0, 0, (UINT)mMainMenu);
 
 	if (show)
 	{
