@@ -129,11 +129,11 @@ ClipboardHistory::Save()
 	for (; idx >= 0; idx--)
 	{
 		bool pinned;
-		LPCWSTR strItem = GetItem(idx, pinned);
-		if (!strItem || !strItem[0])
+		const CString strItem(GetItem(idx, pinned));
+		if (strItem.IsEmpty())
 			break;
 
-		::WriteFile(hFile, strItem, wcslen(strItem) * sizeof(WCHAR), &bytesWritten, nullptr);
+		::WriteFile(hFile, (LPCWSTR)strItem, strItem.GetLength() * sizeof(WCHAR), &bytesWritten, nullptr);
 		::WriteFile(hFile, kFieldDelimiter, wcslen(kFieldDelimiter) * sizeof(WCHAR), &bytesWritten, nullptr);
 
 		pinStr.Format(L"%d", pinned);
@@ -286,7 +286,7 @@ ClipboardHistory::Add(const CString & str, bool pinned)
 	return TRUE;
 }
 
-LPCWSTR
+CString
 ClipboardHistory::GetItem(int idx, bool &pinned)
 {
 	int cnt = 0;
@@ -299,7 +299,7 @@ ClipboardHistory::GetItem(int idx, bool &pinned)
 		}
 	}
 
-	return nullptr;
+	return CString();
 }
 
 void

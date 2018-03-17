@@ -50,7 +50,7 @@ public:
 	void Remove(int idx);
 	void Clear();
 
-	LPCWSTR GetItem(int idx, bool &pinned);
+	CString GetItem(int idx, bool &pinned);
 	void MoveToHead(int idx, const CString & str);
 
 protected:
