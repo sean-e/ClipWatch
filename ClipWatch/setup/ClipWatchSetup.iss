@@ -3,7 +3,7 @@
 
 #define MyAppName "ClipWatch"
 #define MyAppPublisher "Fester (Sean Echevarria)"
-#define MyAppURL "https://sourceforge.net/projects/clipwatch/"
+#define MyAppURL "https://github.com/sean-e/ClipWatch"
 #define MyAppExeName "ClipWatch.exe"
 #define ExeDir ".\..\Release"
 #define MyAppVersion "2.2.0.0"
@@ -15,7 +15,6 @@
 AppId={{E136E91C-9992-4C5E-BE7A-27605A9BBC56}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#mTrollAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
