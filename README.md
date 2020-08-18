@@ -7,7 +7,7 @@ Text that you copy or cut from other applications is automatically added to the 
 When you want to paste something that you previously copied but is no longer in the Windows clipboard, use the hotkey to display ClipWatch and then click on the text item in the clip list (or use up/down arrow keys followed by enter) to put that text back into the Windows clipboard. 
 ClipWatch will then hide itself and attempt to paste the restored text into the window that was active before the ClipWatch window was displayed.
 
-# Features
+## Features
 - Manage clipboard text items
 - Hotkey to display window: Win+V in Windows 7 / Win+A in Windows 8
 - Pin items in clipboard history so that they are never purged (ctrl+p)
