@@ -68,6 +68,8 @@ FindAndOpenRunningInstance()
 		if (TaskBarWnd::kAcknowledgeOpen == SendMessage(hPrevInst, WM_COMMAND, IDC_DISPLAYAPP, 0))
 		{
 			// running instance opened up, we can just exit
+// 			SetForegroundWindow(hPrevInst);
+// 			ShowWindow(hPrevInst, SW_SHOW);
 			return true;
 		}
 
