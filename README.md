@@ -10,8 +10,8 @@ ClipWatch will then hide itself and attempt to paste the restored text into the 
 ## Features
 - Manage clipboard text items
 - Hotkey to display window: Ctrl+Shift+V
-- Pin items in clipboard history so that they are never purged (ctrl+p)
-- Search for items (ctrl+f)
+- Pin items in clipboard history so that they are never purged (Ctrl+P)
+- Search for items (Ctrl+F)
 - Clippings restored after logout/login
 - Single command insert of text to active application (on mouse-click or press of enter) after list displayed via hotkey
 - Application loads in task tray, stays out of the way. Display via hotkey. It automatically goes away upon item selection.
