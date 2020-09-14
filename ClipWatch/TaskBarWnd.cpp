@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2009, 2013-2014, 2018 Sean Echevarria
+* Copyright (C) 2001-2004, 2009, 2013-2014, 2018, 2020 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -45,7 +45,7 @@ TaskBarWnd::TaskBarWnd(AppSettings settings) :
 	mAppSettings(settings),
 	mMainWnd(nullptr)
 {
-	LPCWSTR pChStr = mAppSettings->GetValue(L"settings", L"hotkey", ::IsWindows8OrGreater() ? L"A" : L"V");
+	LPCWSTR pChStr = mAppSettings->GetValue(L"settings", L"hotkey", L"V");
 	WCHAR chStr[2] = L"";
 	if (islower(pChStr[0]))
 		chStr[0] = _toupper(pChStr[0]);
@@ -58,9 +58,9 @@ TaskBarWnd::TaskBarWnd(AppSettings settings) :
 	{
 		LPCWSTR lpHotkeyMod;
 		if (idx == 2)
-			lpHotkeyMod = mAppSettings->GetValue(L"settings", L"hotkeyModifier1", L"WIN");
+			lpHotkeyMod = mAppSettings->GetValue(L"settings", L"hotkeyModifier1", L"CTRL");
 		else
-			lpHotkeyMod = mAppSettings->GetValue(L"settings", L"hotkeyModifier2");
+			lpHotkeyMod = mAppSettings->GetValue(L"settings", L"hotkeyModifier2", L"SHIFT");
 
 		if (lpHotkeyMod && _wcsicmp(lpHotkeyMod, L"CTRL") == 0)
 		{
