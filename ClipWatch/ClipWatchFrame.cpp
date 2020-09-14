@@ -1,6 +1,6 @@
 /*
 * ClipWatch clipboard extender/history/utility
-* Copyright (C) 2001-2004, 2009, 2013-2014, 2018 Sean Echevarria
+* Copyright (C) 2001-2004, 2009, 2013-2014, 2018, 2020 Sean Echevarria
 *
 * This file is part of ClipWatch.
 *
@@ -1225,7 +1225,7 @@ ClipWatchFrame::OnAbout(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled
 		"https://github.com/sean-e/ClipWatch/\r\n"
 		"https://sourceforge.net/projects/clipwatch/\r\n"
 		"\r\n"
-		"Copyright 2001-2009, 2013-2014, 2018 Sean Echevarria");
+		"Copyright 2001-2009, 2013-2014, 2018, 2020 Sean Echevarria");
 
 	MessageBox(msgTxt, L"About", MB_OK | MB_ICONINFORMATION);
 	bHandled = TRUE;

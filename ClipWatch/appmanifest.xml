@@ -2,7 +2,7 @@
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1"  xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" manifestVersion="1.0">
   <assemblyIdentity
     processorArchitecture="x86"
-    version="2.2.0.0"
+    version="2.2.1.0"
     name="ClipWatch"
     type="win32"
   />
