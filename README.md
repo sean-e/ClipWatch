@@ -9,7 +9,7 @@ ClipWatch will then hide itself and attempt to paste the restored text into the 
 
 ## Features
 - Manage clipboard text items
-- Hotkey to display window: Win+V in Windows 7 / Win+A in Windows 8
+- Hotkey to display window: Ctrl+Shift+V
 - Pin items in clipboard history so that they are never purged (ctrl+p)
 - Search for items (ctrl+f)
 - Clippings restored after logout/login
